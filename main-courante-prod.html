@@ -1,0 +1,1100 @@
+<title>Main Courante SSIAP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* ── Tokens ── */
+:root {
+  --bg: #0b0f14;
+  --surface: #131a22;
+  --card: #1a2332;
+  --card2: #1e2a3a;
+  --border: #253040;
+  --fg: #e8edf3;
+  --fg2: #8a9bb0;
+  --go: #22c55e;
+  --go-dk: #16a34a;
+  --go-bg: #052e16;
+  --info: #38bdf8;
+  --info-bg: #082030;
+  --warn: #f59e0b;
+  --warn-bg: #2d1f02;
+  --danger: #ef4444;
+  --danger-bg: #2d0a0a;
+  --accent: #6366f1;
+  --accent-bg: #1e1f4a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f0f4f8; --surface: #ffffff; --card: #ffffff; --card2: #f7fafd;
+    --border: #d1dce8; --fg: #0f1923; --fg2: #5a7085;
+    --go-bg: #dcfce7; --info-bg: #e0f4ff; --warn-bg: #fef3c7;
+    --danger-bg: #fee2e2; --accent-bg: #ede9fe;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f0f4f8; --surface: #ffffff; --card: #ffffff; --card2: #f7fafd;
+  --border: #d1dce8; --fg: #0f1923; --fg2: #5a7085;
+  --go-bg: #dcfce7; --info-bg: #e0f4ff; --warn-bg: #fef3c7;
+  --danger-bg: #fee2e2; --accent-bg: #ede9fe;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0;
+}
+
+/* ── Layout ── */
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+  padding-block: 20px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ── Header ── */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.top-bar h1 { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+.top-bar time { font-size: 12px; color: var(--fg2); font-variant-numeric: tabular-nums; }
+.badge-site {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  top: env(safe-area-inset-top, 0px);
+  left: 50%; transform: translateX(-50%) translateY(-80px);
+  z-index: 999;
+  min-width: 240px; max-width: 340px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 16px;
+  font-size: 13px; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  text-align: center;
+}
+#toast.show { transform: translateX(-50%) translateY(16px); }
+#toast.ok { border-color: var(--go); color: var(--go); }
+#toast.err { border-color: var(--danger); color: var(--danger); }
+#toast.warn { border-color: var(--warn); color: var(--warn); }
+
+/* ── Offline banner ── */
+#offline-banner {
+  display: none;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--warn);
+  text-align: center;
+}
+#offline-banner.show { display: block; }
+
+/* ── Section cards ── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 18px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.section-head:active { opacity: .7; }
+.section-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.section-title { font-size: 14px; font-weight: 600; flex: 1; }
+.section-chip {
+  font-size: 11px; font-weight: 600;
+  padding: 3px 8px; border-radius: 20px;
+  background: var(--card); color: var(--fg2);
+}
+.chevron { font-size: 10px; color: var(--fg2); transition: transform .2s; }
+.section.open .chevron { transform: rotate(180deg); }
+.section-body { display: none; border-top: 1px solid var(--border); }
+.section.open .section-body { display: block; }
+
+.icon-blue { background: var(--info-bg); }
+.icon-green { background: var(--go-bg); }
+.icon-warn { background: var(--warn-bg); }
+.icon-purple { background: var(--accent-bg); }
+
+/* ── Form fields ── */
+.field-group {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+input, select, textarea {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--fg);
+  padding: 10px 12px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+textarea { resize: vertical; min-height: 72px; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9bb0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 34px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── Big action buttons ── */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 15px; font-weight: 700;
+  border: none; border-radius: 14px;
+  padding: 14px 20px;
+  cursor: pointer;
+  width: 100%;
+  transition: opacity .15s, transform .1s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active { transform: scale(.97); opacity: .85; }
+.btn-go { background: var(--go); color: #fff; }
+.btn-go:disabled { background: var(--card); color: var(--fg2); cursor: default; transform: none; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--fg); font-size: 13px; font-weight: 600; padding: 11px 16px; }
+.btn-danger { background: var(--danger-bg); color: var(--danger); font-size: 13px; font-weight: 600; border: 1px solid var(--danger); }
+.btn-accent { background: var(--accent); color: #fff; }
+
+/* ── Prise de poste CTA ── */
+.poste-cta { padding: 16px 18px; }
+
+/* ── Progress ronde ── */
+.ronde-progress-wrap {
+  padding: 16px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progress-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-bar {
+  flex: 1; height: 8px; background: var(--card);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--go);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.progress-label { font-size: 12px; font-weight: 700; color: var(--go); min-width: 40px; text-align: right; }
+
+/* ── Big Ronde button ── */
+.ronde-main-btn {
+  margin: 14px 18px 0;
+  min-height: 64px;
+  font-size: 17px;
+}
+.ronde-comment-zone {
+  margin: 10px 18px 0;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown .2s ease;
+}
+.ronde-comment-zone.open { display: flex; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:none } }
+.ronde-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── Ronde log ── */
+.ronde-log {
+  margin: 14px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ronde-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--card);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  border-left: 3px solid var(--go);
+}
+.ronde-entry-time { font-weight: 700; color: var(--go); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ronde-entry-comment { color: var(--fg2); font-size: 12px; }
+
+/* ── Événements ── */
+.events-list {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.event-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+  position: relative;
+}
+.event-card-head { display: flex; justify-content: space-between; align-items: center; }
+.event-badge { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 20px; background: var(--warn-bg); color: var(--warn); }
+.event-del { background: none; border: none; cursor: pointer; color: var(--fg2); font-size: 16px; padding: 2px; }
+.event-del:hover { color: var(--danger); }
+.no-events { font-size: 13px; color: var(--fg2); text-align: center; padding: 20px; }
+
+/* ── Queue badge ── */
+.queue-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 0 18px 14px;
+}
+.queue-badge.show { display: flex; }
+
+/* ── Clôture ── */
+.cloture-status {
+  margin: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-val { font-weight: 700; color: var(--fg); }
+.stat-val.green { color: var(--go); }
+.stat-val.warn { color: var(--warn); }
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Restore banner ── */
+#restore-banner {
+  background: var(--info-bg);
+  border: 1px solid var(--info);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+#restore-banner.show { display: flex; }
+#restore-banner p { font-size: 13px; color: var(--info); }
+#restore-banner .row { display: flex; gap: 8px; }
+#restore-banner .row button { flex: 1; }
+
+/* ── Done state ── */
+#done-screen {
+  display: none;
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+#done-screen.show { display: flex; }
+#done-screen .big-icon { font-size: 56px; }
+#done-screen h2 { font-size: 20px; font-weight: 800; }
+#done-screen p { font-size: 13px; color: var(--fg2); max-width: 280px; }
+</style>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<div class="app">
+
+  <!-- OFFLINE BANNER -->
+  <div id="offline-banner">⚠️ Hors ligne — les rondes sont mises en file d'attente et seront envoyées automatiquement dès la reconnexion.</div>
+
+  <!-- RESTORE BANNER -->
+  <div id="restore-banner">
+    <p>📂 Une vacation en cours a été trouvée. Souhaitez-vous la reprendre ?</p>
+    <div class="row">
+      <button class="btn btn-go" style="font-size:13px;min-height:0;padding:10px" onclick="restoreDraft()">✓ Reprendre</button>
+      <button class="btn btn-outline" style="font-size:13px;min-height:0;padding:10px" onclick="discardDraft()">✕ Ignorer</button>
+    </div>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div id="done-screen">
+    <div class="big-icon">✅</div>
+    <h2>Vacation clôturée</h2>
+    <p>Toutes les données ont été transmises à Notion. Bonne fin de service !</p>
+    <button class="btn btn-outline" style="max-width:200px;margin-top:8px" onclick="resetApp()">Nouvelle vacation</button>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar" id="main-content">
+    <div style="display:flex;flex-direction:column;gap:3px">
+      <h1>🛡 Main Courante</h1>
+      <time id="clock">--:--</time>
+    </div>
+    <span class="badge-site" id="site-badge">—</span>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 1 — PRISE DE POSTE
+  ══════════════════════════════ -->
+  <div class="section open" id="sec-poste">
+    <div class="section-head" onclick="toggleSection('sec-poste')">
+      <div class="section-icon icon-blue">📋</div>
+      <span class="section-title">Prise de poste</span>
+      <span class="section-chip" id="chip-poste">À remplir</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <label>Agent
+          <input type="text" id="f-agent" placeholder="Prénom Nom" oninput="autosave()">
+        </label>
+        <label>Site
+          <select id="f-site" onchange="onSiteChange(); autosave()">
+            <option value="">— Choisir le site —</option>
+            <option value="La Villa">La Villa (16 rondes, 19h–03h)</option>
+            <option value="Salle des Tribunes">Salle des Tribunes (14 rondes, 19h–02h)</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label>Date
+            <input type="date" id="f-date" oninput="autosave()">
+          </label>
+          <label>Heure début
+            <input type="time" id="f-hstart" oninput="autosave()">
+          </label>
+        </div>
+        <label>Consignes particulières
+          <textarea id="f-consignes" placeholder="Aucune" rows="2" oninput="autosave()"></textarea>
+        </label>
+      </div>
+      <div class="poste-cta">
+        <button class="btn btn-go" id="btn-valider-poste" onclick="validerPoste()">
+          ✓ Valider la prise de poste
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 2 — RONDES
+  ══════════════════════════════ -->
+  <div class="section" id="sec-rondes">
+    <div class="section-head" onclick="toggleSection('sec-rondes')">
+      <div class="section-icon icon-green">🔁</div>
+      <span class="section-title">Rondes</span>
+      <span class="section-chip" id="chip-rondes">0 / —</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <!-- Progress -->
+      <div class="ronde-progress-wrap">
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+          <span class="progress-label" id="progress-label">0 %</span>
+        </div>
+      </div>
+
+      <!-- Big ronde button -->
+      <button class="btn btn-go ronde-main-btn" id="btn-ronde" onclick="startRonde()" disabled>
+        🛡 Ronde effectuée
+      </button>
+
+      <!-- Comment zone -->
+      <div class="ronde-comment-zone" id="ronde-comment-zone">
+        <textarea id="ronde-comment" placeholder="Commentaire (optionnel) — ex: RAS, Porte ouverte côté jardin…" rows="3"></textarea>
+        <div class="ronde-actions">
+          <button class="btn btn-outline" onclick="cancelRonde()">✕ Annuler</button>
+          <button class="btn btn-go" id="btn-valider-ronde" onclick="validateRonde()">✓ Valider</button>
+        </div>
+      </div>
+
+      <!-- Queue badge -->
+      <div class="queue-badge" id="queue-badge">
+        <span>⏳</span>
+        <span id="queue-label">0 ronde(s) en attente d'envoi</span>
+      </div>
+
+      <!-- Ronde log -->
+      <div class="ronde-log" id="ronde-log"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 3 — ÉVÉNEMENTS
+  ══════════════════════════════ -->
+  <div class="section" id="sec-events">
+    <div class="section-head" onclick="toggleSection('sec-events')">
+      <div class="section-icon icon-warn">⚠️</div>
+      <span class="section-title">Événements</span>
+      <span class="section-chip" id="chip-events">0</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="events-list" id="events-list">
+        <div class="no-events" id="no-events-msg">Aucun événement notable</div>
+      </div>
+      <div class="field-group" style="border-top:1px solid var(--border)">
+        <label>Type d'événement
+          <select id="f-event-type">
+            <option value="">— Choisir —</option>
+            <option>Intrusion</option>
+            <option>Ronde non effectuée</option>
+            <option>Incident technique</option>
+            <option>Trouble à l'ordre public</option>
+            <option>Blessure / accident</option>
+            <option>Incendie / alarme</option>
+            <option>Incident mineur</option>
+            <option>Autre</option>
+          </select>
+        </label>
+        <label>Description
+          <textarea id="f-event-desc" placeholder="Décrivez l'événement…" rows="2"></textarea>
+        </label>
+        <label>Action prise
+          <textarea id="f-event-action" placeholder="Intervention, appel, évacuation…" rows="2"></textarea>
+        </label>
+        <button class="btn btn-outline" onclick="addEvent()">＋ Ajouter cet événement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 4 — CLÔTURE
+  ══════════════════════════════ -->
+  <div class="section" id="sec-cloture">
+    <div class="section-head" onclick="toggleSection('sec-cloture')">
+      <div class="section-icon icon-purple">🔒</div>
+      <span class="section-title">Clôture de vacation</span>
+      <span class="section-chip" id="chip-cloture">En attente</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <!-- Récap stats -->
+      <div class="cloture-status" id="cloture-stats"></div>
+      <div class="field-group">
+        <label>Heure de fin
+          <input type="time" id="f-hend" oninput="autosave()">
+        </label>
+        <label>Récapitulatif fin de vacation
+          <textarea id="f-recap" placeholder="Bilan général de la nuit…" rows="3" oninput="autosave()"></textarea>
+        </label>
+        <label style="flex-direction:row;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:13px">
+          <input type="checkbox" id="f-resolved" style="width:18px;height:18px;flex-shrink:0" onchange="autosave()">
+          Incidents résolus / aucun incident en suspens
+        </label>
+        <button class="btn btn-accent" id="btn-cloture" onclick="cloturerVacation()" disabled>
+          🔒 Clôturer et envoyer à Notion
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- .app -->
+
+<script>
+/* ══════════════════════════════════════
+   CONFIG — Remplacer par vos URLs Make
+══════════════════════════════════════ */
+const WEBHOOK = {
+  poste:   'https://hook.eu1.make.com/VOTRE_WEBHOOK_PRISE_DE_POSTE',
+  ronde:   'https://hook.eu1.make.com/VOTRE_WEBHOOK_RONDE',
+  cloture: 'https://hook.eu1.make.com/VOTRE_WEBHOOK_CLOTURE'
+};
+const SITES = {
+  'La Villa':            { rondes: 16, heureDebut: '19:00', heureFin: '03:00' },
+  'Salle des Tribunes':  { rondes: 14, heureDebut: '19:00', heureFin: '02:00' }
+};
+const LS_KEY = 'mc_ssiap_draft_v2';
+const LS_QUEUE = 'mc_ssiap_queue_v2';
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let state = {
+  posteValidee: false,
+  vacation_id: null,          // retourné par Make après prise de poste
+  agent: '', site: '', date: '', hstart: '', hend: '', consignes: '', recap: '',
+  resolved: false,
+  rondes: [],                 // [{ts, label, comment}]
+  events: [],                 // [{type, desc, action, ts}]
+  rondeInProgress: false,
+};
+let offlineQueue = [];        // [{payload, retries}]
+let retryTimer = null;
+
+/* ══════════════════════════════════════
+   CLOCK
+══════════════════════════════════════ */
+function tickClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+tickClock(); setInterval(tickClock, 10000);
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+function openSection(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+/* ══════════════════════════════════════
+   SITE CHANGE
+══════════════════════════════════════ */
+function onSiteChange() {
+  const site = document.getElementById('f-site').value;
+  document.getElementById('site-badge').textContent = site || '—';
+  const cfg = SITES[site];
+  if (cfg) {
+    if (!document.getElementById('f-date').value) {
+      document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    }
+    if (!document.getElementById('f-hstart').value) {
+      document.getElementById('f-hstart').value = cfg.heureDebut;
+    }
+    if (!document.getElementById('f-hend').value) {
+      document.getElementById('f-hend').value = cfg.heureFin;
+    }
+  }
+  updateProgress();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+/* ══════════════════════════════════════
+   OFFLINE
+══════════════════════════════════════ */
+function updateOfflineUI() {
+  const banner = document.getElementById('offline-banner');
+  if (!navigator.onLine) {
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+    flushQueue();
+  }
+}
+window.addEventListener('online',  updateOfflineUI);
+window.addEventListener('offline', updateOfflineUI);
+
+/* ══════════════════════════════════════
+   OFFLINE QUEUE (rondes)
+══════════════════════════════════════ */
+function loadQueue() {
+  try { offlineQueue = JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { offlineQueue = []; }
+}
+function saveQueue() {
+  try { localStorage.setItem(LS_QUEUE, JSON.stringify(offlineQueue)); } catch(e) {}
+  updateQueueBadge();
+}
+function enqueue(payload) {
+  offlineQueue.push({ payload, retries: 0 });
+  saveQueue();
+}
+function updateQueueBadge() {
+  const el = document.getElementById('queue-badge');
+  const lbl = document.getElementById('queue-label');
+  if (offlineQueue.length > 0) {
+    el.classList.add('show');
+    lbl.textContent = `${offlineQueue.length} ronde(s) en attente d'envoi`;
+  } else {
+    el.classList.remove('show');
+  }
+}
+async function flushQueue() {
+  if (!navigator.onLine || offlineQueue.length === 0) return;
+  const toSend = [...offlineQueue];
+  offlineQueue = [];
+  saveQueue();
+  for (const item of toSend) {
+    try {
+      const r = await fetch(WEBHOOK.ronde, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload)
+      });
+      if (!r.ok) throw new Error(r.status);
+    } catch(e) {
+      if (item.retries < 5) {
+        item.retries++;
+        offlineQueue.push(item);
+      }
+    }
+  }
+  saveQueue();
+  if (offlineQueue.length === 0) showToast('Toutes les rondes en attente ont été envoyées ✓', 'ok');
+}
+
+/* ══════════════════════════════════════
+   AUTOSAVE (localStorage)
+══════════════════════════════════════ */
+function autosave() {
+  try {
+    const draft = {
+      ...state,
+      agent:     document.getElementById('f-agent')?.value || '',
+      site:      document.getElementById('f-site')?.value || '',
+      date:      document.getElementById('f-date')?.value || '',
+      hstart:    document.getElementById('f-hstart')?.value || '',
+      hend:      document.getElementById('f-hend')?.value || '',
+      consignes: document.getElementById('f-consignes')?.value || '',
+      recap:     document.getElementById('f-recap')?.value || '',
+      resolved:  document.getElementById('f-resolved')?.checked || false,
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(draft));
+  } catch(e) {}
+}
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+function applyDraft(draft) {
+  state = { ...state, ...draft };
+  document.getElementById('f-agent').value = draft.agent || '';
+  document.getElementById('f-site').value = draft.site || '';
+  document.getElementById('f-date').value = draft.date || '';
+  document.getElementById('f-hstart').value = draft.hstart || '';
+  document.getElementById('f-hend').value = draft.hend || '';
+  document.getElementById('f-consignes').value = draft.consignes || '';
+  document.getElementById('f-recap').value = draft.recap || '';
+  document.getElementById('f-resolved').checked = draft.resolved || false;
+  onSiteChange();
+  renderRondeLog();
+  renderEvents();
+  updateProgress();
+  if (draft.posteValidee) {
+    afterPosteValidee(false); // no toast on restore
+  }
+}
+function clearStorage() {
+  try {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_QUEUE);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════
+   RESTORE BANNER
+══════════════════════════════════════ */
+function checkRestore() {
+  const draft = loadDraft();
+  if (draft && (draft.agent || draft.site || draft.rondes?.length > 0)) {
+    document.getElementById('restore-banner').classList.add('show');
+  }
+}
+function restoreDraft() {
+  document.getElementById('restore-banner').classList.remove('show');
+  const draft = loadDraft();
+  if (draft) { applyDraft(draft); showToast('Vacation restaurée ✓', 'ok'); }
+}
+function discardDraft() {
+  document.getElementById('restore-banner').classList.remove('show');
+  clearStorage();
+}
+
+/* ══════════════════════════════════════
+   PRISE DE POSTE
+══════════════════════════════════════ */
+async function validerPoste() {
+  const agent = document.getElementById('f-agent').value.trim();
+  const site  = document.getElementById('f-site').value;
+  const date  = document.getElementById('f-date').value;
+  const hstart= document.getElementById('f-hstart').value;
+  if (!agent || !site || !date || !hstart) {
+    showToast('Remplissez tous les champs obligatoires', 'err'); return;
+  }
+  const btn = document.getElementById('btn-valider-poste');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi…';
+
+  const payload = {
+    type: 'prise_de_poste',
+    agent, site, date,
+    heure_debut: hstart,
+    consignes: document.getElementById('f-consignes').value.trim()
+  };
+
+  try {
+    let vacation_id = null;
+    if (navigator.onLine) {
+      const r = await fetch(WEBHOOK.poste, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        try {
+          const data = await r.json();
+          vacation_id = data.vacation_id || data.id || null;
+        } catch(e) {}
+      } else {
+        throw new Error('HTTP ' + r.status);
+      }
+    } else {
+      // offline: génère un id temporaire
+      vacation_id = 'OFFLINE_' + Date.now();
+      showToast('Hors ligne — ID temporaire généré', 'warn');
+    }
+    state.vacation_id = vacation_id;
+    state.posteValidee = true;
+    autosave();
+    afterPosteValidee(true);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✓ Valider la prise de poste';
+    showToast('Erreur réseau — réessayez', 'err');
+  }
+}
+
+function afterPosteValidee(withToast) {
+  // Lock poste fields
+  ['f-agent','f-site','f-date','f-hstart','f-consignes'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = true;
+  });
+  const btn = document.getElementById('btn-valider-poste');
+  btn.innerHTML = '✓ Prise de poste enregistrée';
+  btn.disabled = true;
+  document.getElementById('chip-poste').textContent = '✓ OK';
+  document.getElementById('chip-poste').style.color = 'var(--go)';
+  // Enable ronde
+  document.getElementById('btn-ronde').disabled = false;
+  document.getElementById('btn-cloture').disabled = false;
+  // Open rondes section
+  openSection('sec-rondes');
+  if (withToast) showToast('Prise de poste enregistrée ✓', 'ok');
+  updateClotureStats();
+}
+
+/* ══════════════════════════════════════
+   RONDES
+══════════════════════════════════════ */
+function startRonde() {
+  if (state.rondeInProgress) return;
+  state.rondeInProgress = true;
+  document.getElementById('ronde-comment').value = '';
+  document.getElementById('ronde-comment-zone').classList.add('open');
+  document.getElementById('btn-ronde').disabled = true;
+  document.getElementById('ronde-comment').focus();
+}
+function cancelRonde() {
+  state.rondeInProgress = false;
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  document.getElementById('btn-ronde').disabled = false;
+}
+async function validateRonde() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const label = `${h}h${m}`;
+  const comment = document.getElementById('ronde-comment').value.trim() || 'RAS';
+
+  const entry = { ts: now.toISOString(), label, comment };
+  state.rondes.push(entry);
+  state.rondeInProgress = false;
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  document.getElementById('btn-ronde').disabled = false;
+  autosave();
+  renderRondeLog();
+  updateProgress();
+  updateClotureStats();
+
+  // Send to Make
+  const payload = {
+    type: 'ronde',
+    vacation_id: state.vacation_id,
+    heure: label,
+    commentaire: comment,
+    ts: now.toISOString()
+  };
+  if (navigator.onLine) {
+    try {
+      const r = await fetch(WEBHOOK.ronde, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        showToast(`Ronde ${label} enregistrée ✓`, 'ok');
+      } else {
+        throw new Error(r.status);
+      }
+    } catch(e) {
+      enqueue(payload);
+      showToast(`Ronde enregistrée localement (hors ligne)`, 'warn');
+    }
+  } else {
+    enqueue(payload);
+    showToast(`Ronde enregistrée — file d'attente`, 'warn');
+  }
+}
+
+function renderRondeLog() {
+  const log = document.getElementById('ronde-log');
+  if (state.rondes.length === 0) { log.innerHTML = ''; return; }
+  log.innerHTML = [...state.rondes].reverse().map(r =>
+    `<div class="ronde-entry">
+      <span class="ronde-entry-time">${r.label}</span>
+      <div style="min-width:0">
+        <div>${r.comment === 'RAS' ? '' : r.comment}</div>
+        <div class="ronde-entry-comment">${r.comment === 'RAS' ? 'RAS' : ''}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function updateProgress() {
+  const site = document.getElementById('f-site').value;
+  const goal = SITES[site]?.rondes || 0;
+  const done = state.rondes.length;
+  const pct = goal ? Math.min(100, Math.round(done / goal * 100)) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = pct + ' %';
+  document.getElementById('chip-rondes').textContent = `${done} / ${goal || '—'}`;
+}
+
+/* ══════════════════════════════════════
+   ÉVÉNEMENTS
+══════════════════════════════════════ */
+function addEvent() {
+  const type   = document.getElementById('f-event-type').value;
+  const desc   = document.getElementById('f-event-desc').value.trim();
+  const action = document.getElementById('f-event-action').value.trim();
+  if (!type || !desc) { showToast('Choisissez un type et une description', 'err'); return; }
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  state.events.push({ type, desc, action, ts: now.toISOString(), label: `${h}h${m}` });
+  document.getElementById('f-event-type').value = '';
+  document.getElementById('f-event-desc').value = '';
+  document.getElementById('f-event-action').value = '';
+  autosave();
+  renderEvents();
+  updateClotureStats();
+  showToast('Événement ajouté ✓', 'ok');
+}
+function removeEvent(i) {
+  state.events.splice(i, 1);
+  autosave();
+  renderEvents();
+  updateClotureStats();
+}
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  const chip = document.getElementById('chip-events');
+  chip.textContent = state.events.length;
+  document.getElementById('no-events-msg').style.display = state.events.length ? 'none' : '';
+  const cards = state.events.map((e, i) =>
+    `<div class="event-card">
+      <div class="event-card-head">
+        <span class="event-badge">${e.type}</span>
+        <span style="font-size:11px;color:var(--fg2)">${e.label}</span>
+        <button class="event-del" onclick="removeEvent(${i})" title="Supprimer">✕</button>
+      </div>
+      <div style="font-size:13px;color:var(--fg)">${e.desc}</div>
+      ${e.action ? `<div style="font-size:12px;color:var(--fg2)">→ ${e.action}</div>` : ''}
+    </div>`
+  ).join('');
+  // Replace cards (keep no-events-msg element)
+  const existing = list.querySelectorAll('.event-card');
+  existing.forEach(el => el.remove());
+  list.insertAdjacentHTML('afterbegin', cards);
+}
+
+/* ══════════════════════════════════════
+   CLÔTURE
+══════════════════════════════════════ */
+function updateClotureStats() {
+  const site = document.getElementById('f-site').value;
+  const goal = SITES[site]?.rondes || '—';
+  const done = state.rondes.length;
+  const nb = state.events.length;
+  document.getElementById('cloture-stats').innerHTML = `
+    <div class="stat-row"><span>Agent</span><span class="stat-val">${document.getElementById('f-agent')?.value || '—'}</span></div>
+    <div class="stat-row"><span>Site</span><span class="stat-val">${site || '—'}</span></div>
+    <div class="stat-row"><span>Rondes effectuées</span><span class="stat-val ${done >= goal ? 'green' : 'warn'}">${done} / ${goal}</span></div>
+    <div class="stat-row"><span>Événements</span><span class="stat-val ${nb > 0 ? 'warn' : ''}">${nb}</span></div>
+  `;
+}
+
+async function cloturerVacation() {
+  // Flush queue first
+  await flushQueue();
+  if (offlineQueue.length > 0) {
+    showToast('Des rondes sont encore en attente. Vérifiez la connexion.', 'warn');
+    return;
+  }
+  const hend  = document.getElementById('f-hend').value;
+  const recap = document.getElementById('f-recap').value.trim();
+  if (!hend) { showToast('Indiquez l\'heure de fin', 'err'); return; }
+
+  const btn = document.getElementById('btn-cloture');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi en cours…';
+
+  const rondeTxt = state.rondes.map(r => `${r.label} : ${r.comment}`).join(' | ');
+  const eventsTxt = state.events.map(e => `[${e.label}] ${e.type} — ${e.desc}${e.action ? ' → '+e.action : ''}`).join('\n');
+
+  const payload = {
+    type: 'cloture',
+    vacation_id: state.vacation_id,
+    agent: document.getElementById('f-agent').value,
+    site: document.getElementById('f-site').value,
+    date: document.getElementById('f-date').value,
+    heure_debut: document.getElementById('f-hstart').value,
+    heure_fin: hend,
+    rondes: rondeTxt,
+    nombre_rondes: state.rondes.length,
+    evenements: eventsTxt,
+    nb_incidents: state.events.length,
+    recap,
+    resolu: document.getElementById('f-resolved').checked,
+    statut: state.events.length > 0 ? 'Incident majeur' : 'Clôturée'
+  };
+
+  try {
+    if (!navigator.onLine) throw new Error('offline');
+    const r = await fetch(WEBHOOK.cloture, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    clearStorage();
+    showDone();
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '🔒 Clôturer et envoyer à Notion';
+    if (!navigator.onLine) {
+      showToast('Hors ligne — impossible de clôturer', 'err');
+    } else {
+      showToast('Erreur réseau — réessayez', 'err');
+    }
+  }
+}
+
+function showDone() {
+  document.getElementById('main-content').style.display = 'none';
+  ['sec-poste','sec-rondes','sec-events','sec-cloture'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('done-screen').classList.add('show');
+}
+
+function resetApp() {
+  location.reload();
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Today's date as default
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  loadQueue();
+  updateQueueBadge();
+  updateOfflineUI();
+  checkRestore();
+  updateClotureStats();
+});
+</script>
