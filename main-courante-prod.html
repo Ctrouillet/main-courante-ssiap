@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Main Courante SSIAP</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0f14">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* ── Tokens ── */
+:root {
+  --bg: #0b0f14;
+  --surface: #131a22;
+  --card: #1a2332;
+  --card2: #1e2a3a;
+  --border: #253040;
+  --fg: #e8edf3;
+  --fg2: #8a9bb0;
+  --go: #22c55e;
+  --go-dk: #16a34a;
+  --go-bg: #052e16;
+  --info: #38bdf8;
+  --info-bg: #082030;
+  --warn: #f59e0b;
+  --warn-bg: #2d1f02;
+  --danger: #ef4444;
+  --danger-bg: #2d0a0a;
+  --accent: #6366f1;
+  --accent-bg: #1e1f4a;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --bg: #f0f4f8; --surface: #ffffff; --card: #ffffff; --card2: #f7fafd;
+    --border: #d1dce8; --fg: #0f1923; --fg2: #5a7085;
+    --go-bg: #dcfce7; --info-bg: #e0f4ff; --warn-bg: #fef3c7;
+    --danger-bg: #fee2e2; --accent-bg: #ede9fe;
+    color-scheme: light;
+  }
+}
+:root[data-theme="light"] {
+  --bg: #f0f4f8; --surface: #ffffff; --card: #ffffff; --card2: #f7fafd;
+  --border: #d1dce8; --fg: #0f1923; --fg2: #5a7085;
+  --go-bg: #dcfce7; --info-bg: #e0f4ff; --warn-bg: #fef3c7;
+  --danger-bg: #fee2e2; --accent-bg: #ede9fe;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+html, body {
+  width: 100%;
+  height: 100%;
+}
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  min-height: 100vh;
+  min-height: 100dvh;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
+}
+
+/* ── Layout ── */
+.app {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 16px;
+  padding-bottom: max(80px, calc(60px + env(safe-area-inset-bottom, 0px)));
+  padding-left: max(14px, env(safe-area-inset-left, 0px));
+  padding-right: max(14px, env(safe-area-inset-right, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Header ── */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.top-bar h1 { font-size: 16px; font-weight: 800; letter-spacing: .01em; }
+.top-bar time { font-size: 13px; color: var(--fg2); font-variant-numeric: tabular-nums; }
+.badge-site {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ── Toast ── */
+#toast {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%) translateY(100px);
+  z-index: 999;
+  min-width: 260px; max-width: calc(100vw - 32px);
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 20px;
+  font-size: 15px; font-weight: 600;
+  box-shadow: 0 8px 40px rgba(0,0,0,.5);
+  transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+  text-align: center;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.ok { border-color: var(--go); color: var(--go); }
+#toast.err { border-color: var(--danger); color: var(--danger); }
+#toast.warn { border-color: var(--warn); color: var(--warn); }
+
+/* ── Offline banner ── */
+#offline-banner {
+  display: none;
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--warn);
+  text-align: center;
+}
+#offline-banner.show { display: block; }
+
+/* ── Section cards ── */
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  min-height: 60px;
+}
+.section-head:active { opacity: .65; }
+.section-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.section-title { font-size: 15px; font-weight: 700; flex: 1; }
+.section-chip {
+  font-size: 11px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
+  background: var(--card); color: var(--fg2);
+}
+.chevron { font-size: 11px; color: var(--fg2); transition: transform .22s; }
+.section.open .chevron { transform: rotate(180deg); }
+.section-body { display: none; border-top: 1px solid var(--border); }
+.section.open .section-body { display: block; }
+
+.icon-blue { background: var(--info-bg); }
+.icon-green { background: var(--go-bg); }
+.icon-warn { background: var(--warn-bg); }
+.icon-purple { background: var(--accent-bg); }
+
+/* ── Form fields ── */
+.field-group {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--fg2);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+/* font-size 16px minimum — empêche le zoom automatique sur iOS */
+input, select, textarea {
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 500;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--fg);
+  padding: 13px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 50px;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+textarea { resize: none; min-height: 88px; line-height: 1.5; }
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9bb0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 40px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* ── Big action buttons ── */
+.btn {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 16px; font-weight: 700;
+  border: none; border-radius: 16px;
+  padding: 16px 20px;
+  cursor: pointer;
+  width: 100%;
+  min-height: 54px;
+  transition: opacity .15s, transform .08s;
+  letter-spacing: .01em;
+}
+.btn:active { transform: scale(.96); opacity: .8; }
+.btn-go { background: var(--go); color: #fff; }
+.btn-go:disabled { background: var(--card); color: var(--fg2); cursor: default; transform: none; opacity: 1; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--fg); font-size: 14px; font-weight: 600; padding: 13px 16px; min-height: 48px; }
+.btn-danger { background: var(--danger-bg); color: var(--danger); font-size: 14px; font-weight: 600; border: 1px solid var(--danger); min-height: 48px; }
+.btn-accent { background: var(--accent); color: #fff; }
+
+/* ── Prise de poste CTA ── */
+.poste-cta { padding: 16px 18px; }
+
+/* ── Progress ronde ── */
+.ronde-progress-wrap {
+  padding: 16px 18px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.progress-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.progress-bar {
+  flex: 1; height: 8px; background: var(--card);
+  border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: var(--go);
+  border-radius: 99px;
+  transition: width .4s ease;
+}
+.progress-label { font-size: 12px; font-weight: 700; color: var(--go); min-width: 40px; text-align: right; }
+
+/* ── Big Ronde button ── */
+.ronde-main-btn {
+  margin: 14px 0 0;
+  min-height: 72px;
+  font-size: 18px;
+  width: 100%;
+  border-radius: 18px;
+}
+.ronde-comment-zone {
+  margin: 10px 18px 0;
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  animation: slideDown .2s ease;
+}
+.ronde-comment-zone.open { display: flex; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-8px) } to { opacity:1; transform:none } }
+.ronde-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+/* ── Ronde log ── */
+.ronde-log {
+  margin: 14px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ronde-entry {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  border-left: 3px solid var(--go);
+}
+.ronde-entry-time { font-weight: 700; color: var(--go); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ronde-entry-comment { color: var(--fg2); font-size: 13px; }
+
+/* ── Événements ── */
+.events-list {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.event-card {
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 14px;
+  position: relative;
+}
+.event-card-head { display: flex; justify-content: space-between; align-items: center; }
+.event-badge { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: var(--warn-bg); color: var(--warn); }
+.event-del { background: none; border: none; cursor: pointer; color: var(--fg2); font-size: 20px; padding: 6px; min-width: 36px; min-height: 36px; display:flex; align-items:center; justify-content:center; }
+.event-del:active { color: var(--danger); }
+.no-events { font-size: 14px; color: var(--fg2); text-align: center; padding: 24px 20px; }
+
+/* ── Queue badge ── */
+.queue-badge {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: var(--warn);
+  background: var(--warn-bg);
+  border: 1px solid var(--warn);
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin: 0 18px 14px;
+}
+.queue-badge.show { display: flex; }
+
+/* ── Clôture ── */
+.cloture-status {
+  margin: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; padding: 8px 0; border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-val { font-weight: 700; color: var(--fg); }
+.stat-val.green { color: var(--go); }
+.stat-val.warn { color: var(--warn); }
+
+/* ── Spinner ── */
+.spinner {
+  display: inline-block;
+  width: 16px; height: 16px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Restore banner ── */
+#restore-banner {
+  background: var(--info-bg);
+  border: 1px solid var(--info);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+}
+#restore-banner.show { display: flex; }
+#restore-banner p { font-size: 13px; color: var(--info); }
+#restore-banner .row { display: flex; gap: 8px; }
+#restore-banner .row button { flex: 1; }
+
+/* ── Done state ── */
+#done-screen {
+  display: none;
+  text-align: center;
+  padding: 40px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+#done-screen.show { display: flex; }
+#done-screen .big-icon { font-size: 56px; }
+#done-screen h2 { font-size: 20px; font-weight: 800; }
+#done-screen p { font-size: 13px; color: var(--fg2); max-width: 280px; }
+
+/* ── Toggle switch résolu ── */
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0 6px; gap:12px; }
+.toggle-row-text { display:flex; flex-direction:column; gap:3px; flex:1; }
+.toggle-row-text strong { font-size:14px; font-weight:700; color:var(--fg); }
+.toggle-row-text small { font-size:12px; }
+.toggle-switch { position:relative; display:inline-block; width:64px; height:36px; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+.toggle-slider { position:absolute; inset:0; background:var(--warn-bg); border:2px solid var(--warn); border-radius:36px; cursor:pointer; transition:.25s; }
+.toggle-slider:before { content:''; position:absolute; height:26px; width:26px; left:3px; bottom:3px; background:var(--warn); border-radius:50%; transition:.25s; }
+.toggle-switch input:checked + .toggle-slider { background:var(--go-bg); border-color:var(--go); }
+.toggle-switch input:checked + .toggle-slider:before { transform:translateX(28px); background:var(--go); }
+
+/* ── Consignes ── */
+.consigne-preset { font-size:12px; color:var(--info); margin-top:4px; display:flex; align-items:center; gap:4px; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<div class="app">
+
+  <!-- OFFLINE BANNER -->
+  <div id="offline-banner">⚠️ Hors ligne — les rondes sont mises en file d'attente et seront envoyées automatiquement dès la reconnexion.</div>
+
+  <!-- RESTORE BANNER -->
+  <div id="restore-banner">
+    <p>📂 Une vacation en cours a été trouvée. Souhaitez-vous la reprendre ?</p>
+    <div class="row">
+      <button class="btn btn-go" style="font-size:13px;min-height:0;padding:10px" onclick="restoreDraft()">✓ Reprendre</button>
+      <button class="btn btn-outline" style="font-size:13px;min-height:0;padding:10px" onclick="discardDraft()">✕ Ignorer</button>
+    </div>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div id="done-screen">
+    <div class="big-icon">✅</div>
+    <h2>Vacation clôturée</h2>
+    <p>Vacation clôturée avec succès. Bonne fin de service !</p>
+    <button class="btn btn-outline" style="max-width:200px;margin-top:8px" onclick="resetApp()">Nouvelle vacation</button>
+  </div>
+
+  <!-- TOP BAR -->
+  <div class="top-bar" id="main-content">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+      <img src="data:image/png;base64,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" alt="Jet Guards" style="width:44px;height:44px;object-fit:contain;flex-shrink:0">
+      <div style="display:flex;flex-direction:column;gap:3px;min-width:0">
+        <h1>Main Courante</h1>
+        <time id="clock">--:--</time>
+      </div>
+    </div>
+    <span class="badge-site" id="site-badge">—</span>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 1 — PRISE DE POSTE
+  ══════════════════════════════ -->
+  <div class="section open" id="sec-poste">
+    <div class="section-head" onclick="toggleSection('sec-poste')">
+      <div class="section-icon icon-blue">📋</div>
+      <span class="section-title">Prise de poste</span>
+      <span class="section-chip" id="chip-poste">À remplir</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <label>Agent
+          <input type="text" id="f-agent" placeholder="Prénom Nom" oninput="autosave()">
+        </label>
+        <label>Site
+          <select id="f-site" onchange="onSiteChange(); autosave()">
+            <option value="">— Choisir le site —</option>
+            <option value="La Villa">La Villa (16 rondes, 19h–03h)</option>
+            <option value="Salle des Tribunes">Salle des Tribunes (14 rondes, 19h–02h)</option>
+          </select>
+        </label>
+        <div class="row2">
+          <label>Date de vacation
+            <input type="date" id="f-date" oninput="autosave()">
+          </label>
+          <label>Heure de prise de service
+            <input type="text" id="f-hstart" readonly style="background:var(--card2);color:var(--fg2);cursor:default" placeholder="Auto à la validation">
+          </label>
+        </div>
+        <div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:13px;font-weight:600;color:var(--fg)">Consignes particulières</span>
+          </div>
+          <div id="consignes-display" style="display:none;margin-top:4px"></div>
+          <input type="hidden" id="f-consignes">
+        </div>
+      </div>
+      <div class="poste-cta">
+        <button class="btn btn-go" id="btn-valider-poste" onclick="validerPoste()">
+          ✓ Valider la prise de poste
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 2 — RONDES
+  ══════════════════════════════ -->
+  <div class="section" id="sec-rondes">
+    <div class="section-head" onclick="toggleSection('sec-rondes')">
+      <div class="section-icon icon-green">🔁</div>
+      <span class="section-title">Rondes</span>
+      <span class="section-chip" id="chip-rondes">0 / —</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <!-- Progress -->
+      <div class="ronde-progress-wrap">
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+          <span class="progress-label" id="progress-label">0 %</span>
+        </div>
+      </div>
+
+      <!-- Big ronde button -->
+      <button class="btn btn-go ronde-main-btn" id="btn-ronde" onclick="startRonde()" disabled>
+        🛡 Ronde effectuée
+      </button>
+
+      <!-- Comment zone (optionnel après ajout ronde) -->
+      <div class="ronde-comment-zone" id="ronde-comment-zone">
+        <div style="font-size:13px;font-weight:600;color:var(--fg2);margin-bottom:4px">💬 Ajouter un commentaire sur cette ronde <span style="font-weight:400;opacity:.7">(optionnel)</span></div>
+        <textarea id="ronde-comment" placeholder="ex: RAS, Porte ouverte côté jardin…" rows="2"></textarea>
+        <div class="ronde-actions">
+          <button class="btn btn-outline" onclick="cancelRondeComment()">Passer</button>
+          <button class="btn btn-go" id="btn-valider-ronde" onclick="saveRondeComment()">💾 Enregistrer</button>
+        </div>
+      </div>
+
+      <!-- Queue badge -->
+      <div class="queue-badge" id="queue-badge">
+        <span>⏳</span>
+        <span id="queue-label">0 ronde(s) en attente d'envoi</span>
+      </div>
+
+      <!-- Ronde log -->
+      <div class="ronde-log" id="ronde-log"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 3 — ÉVÉNEMENTS
+  ══════════════════════════════ -->
+  <div class="section" id="sec-events">
+    <div class="section-head" onclick="toggleSection('sec-events')">
+      <div class="section-icon icon-warn">⚠️</div>
+      <span class="section-title">Événements</span>
+      <span class="section-chip" id="chip-events">0</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="events-list" id="events-list">
+        <div class="no-events" id="no-events-msg">Aucun événement notable</div>
+      </div>
+      <div id="resolu-hint" style="display:none;font-size:12px;color:var(--fg2);text-align:center;padding:6px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border);margin-bottom:8px;">
+        👆 Appuyez sur <strong>⏳ En cours</strong> ou <strong>✅ Résolu</strong> sur un événement pour changer son statut
+      </div>
+      <div class="field-group" style="border-top:1px solid var(--border)">
+        <label>Type d'événement
+          <select id="f-event-type">
+            <option value="">— Choisir —</option>
+            <option>🔥 Alarme incendie</option>
+            <option>🚨 Intrusion</option>
+            <option>🚑 Assistance personne</option>
+            <option>🔧 Anomalie technique</option>
+            <option>🚫 Accès non autorisé</option>
+            <option>🧯 Levée de doute incendie</option>
+            <option>🚪 Porte coupe-feu défaillante</option>
+            <option>⚡ Coupure électrique</option>
+            <option>🔒 Problème fermeture / sécurisation</option>
+            <option>🗣️ Conflit / altercation</option>
+            <option>🌊 Dégât des eaux</option>
+            <option>🧍 Personne suspecte</option>
+            <option>📢 Déclenchement alarme intempestif</option>
+            <option>🏥 Évacuation</option>
+            <option>📦 Autre</option>
+          </select>
+        </label>
+        <label>Description
+          <textarea id="f-event-desc" placeholder="Décrivez l'événement…" rows="2"></textarea>
+        </label>
+        <label>Action prise
+          <textarea id="f-event-action" placeholder="Intervention, appel, évacuation…" rows="2"></textarea>
+        </label>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:4px 14px 12px">
+          <div class="toggle-row">
+            <div class="toggle-row-text">
+              <strong>Statut de l'incident</strong>
+              <small id="resolu-state-label" style="color:var(--warn)">⏳ En cours — glisser pour marquer résolu</small>
+            </div>
+            <label class="toggle-switch" aria-label="Marquer résolu">
+              <input type="checkbox" id="f-event-resolu-check" onchange="onResuluToggle()">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <input type="hidden" id="f-event-resolu" value="0">
+        </div>
+        <button class="btn btn-go" onclick="addEvent()" style="width:100%;padding:16px;font-size:17px;font-weight:700;margin-top:8px;border-radius:14px;">＋ Ajouter cet événement</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 4 — PHOTOS / FICHIERS
+  ══════════════════════════════ -->
+  <div class="section open" id="sec-photos">
+    <div class="section-head" onclick="toggleSection('sec-photos')">
+      <div class="section-icon icon-info">📷</div>
+      <span class="section-title">Photos / Fichiers</span>
+      <span class="section-chip" id="chip-photos">0</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <div class="field-group">
+        <p style="font-size:12px;color:var(--fg2);margin-bottom:12px">Photos ou fichiers liés aux événements.</p>
+        <div id="photo-add-zone" style="display:flex;gap:10px">
+          <div onclick="openCameraCapture()" style="flex:1;padding:18px 10px;border-radius:14px;border:2px solid var(--go);background:var(--go-bg);color:var(--go);font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;user-select:none;-webkit-tap-highlight-color:transparent;text-align:center">
+            <span style="font-size:28px">📸</span>
+            <span>Prendre une photo</span>
+          </div>
+          <input type="file" id="f-camera" accept="image/*" capture="environment" style="position:absolute;width:1px;height:1px;opacity:0;pointer-events:none" onchange="addFiles(this.files)">
+          <label for="f-files" style="flex:1;padding:18px 10px;border-radius:14px;border:2px dashed var(--info);background:var(--info-bg);color:var(--info);font-size:14px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;user-select:none;-webkit-tap-highlight-color:transparent;text-align:center">
+            <span style="font-size:28px">🗂</span>
+            <span>Insérer une photo de la galerie</span>
+          </label>
+          <input type="file" id="f-files" multiple accept="image/*,.pdf,.doc,.docx" style="display:none" onchange="addFiles(this.files)">
+        </div>
+        <div id="photo-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════
+       SECTION 5 — CLÔTURE
+  ══════════════════════════════ -->
+  <div class="section" id="sec-cloture">
+    <div class="section-head" onclick="toggleSection('sec-cloture')">
+      <div class="section-icon icon-purple">🔒</div>
+      <span class="section-title">Clôture de vacation</span>
+      <span class="section-chip" id="chip-cloture">En attente</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="section-body">
+      <!-- Récap stats -->
+      <div class="cloture-status" id="cloture-stats"></div>
+      <div class="field-group">
+        <label>Heure de fin de service
+          <input type="time" id="f-hend" disabled style="background:var(--card2);color:var(--fg2);cursor:default;opacity:1">
+          <span id="hend-info" style="font-size:11px;color:var(--info);margin-top:3px;display:block">🕐 Heure réelle de clôture — non modifiable</span>
+        </label>
+        <label>Récapitulatif fin de vacation <span style="color:var(--danger);font-size:11px">obligatoire</span>
+          <textarea id="f-recap" placeholder="Bilan général de la nuit — RAS, incidents, points de vigilance pour la relève…" rows="4" oninput="autosave();this.style.borderColor=''"></textarea>
+        </label>
+        <div id="resolu-summary" style="font-size:13px;color:var(--fg2);padding:8px 12px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">
+          Statut des incidents : <span id="resolu-count">—</span>
+        </div>
+        <button class="btn btn-accent" id="btn-cloture" onclick="cloturerVacation()" disabled>
+          🔒 Clôturer la vacation
+        </button>
+      </div>
+    </div>
+  </div>
+
+<!-- MODAL CONFIRMATION -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;max-width:380px;width:100%;padding:24px;display:flex;flex-direction:column;gap:16px">
+    <div style="font-size:18px;font-weight:700;color:var(--warn)">⚠️ Événements non résolus</div>
+    <div id="confirm-msg" style="font-size:13px;color:var(--fg);white-space:pre-line;line-height:1.6"></div>
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button id="confirm-cancel" class="btn btn-outline" style="flex:1">Annuler</button>
+      <button id="confirm-ok" class="btn" style="flex:1;background:var(--warn);color:#000;font-weight:700">Clôturer quand même</button>
+    </div>
+  </div>
+</div>
+
+</div><!-- .app -->
+
+
+<script>
+/* ══════════════════════════════════════
+   CONFIG — Remplacer par vos URLs Make
+══════════════════════════════════════ */
+const WEBHOOK = {
+  poste:   'https://hook.eu2.make.com/k6053725e6dihw6lwsp0o2d54pwrbjgr',
+  ronde:   'https://hook.eu2.make.com/4hnntgj798cqd6vjjretaj5ehg1h9ujz',
+  cloture: 'https://hook.eu2.make.com/4719634y2g26skx9161yuh314tl6smhu'
+};
+const SITES = {
+  'La Villa': {
+    rondes: 16, heureDebut: '19:00', heureFin: '03:00',
+    consignes: 'Ronde toutes les 30 min — Villa + parc.\nÉtage interdit aux invités.\nPas de danse sur le parquet RDC.\nPrévenir le locataire 45 min avant la fin de soirée.\nNuisances sonores : intervenir dès 22h00.\nFin de service : mettre l\'alarme + clés en BAL.'
+  },
+  'Salle des Tribunes': {
+    rondes: 14, heureDebut: '19:00', heureFin: '02:00',
+    consignes: 'Ronde toutes les 30 min — stade + salle des tribunes.\nStade et pelouse interdits aux invités.\nPas de danse sur le parquet RDC.\nRefermer la porte électrique après arrivée des invités.\nPrévenir le locataire 45 min avant la fin de soirée.\nNuisances sonores : intervenir dès 22h00.\nFin de service : volets verrouillés + salle cheminée fermée à clé + clés en BAL.'
+  }
+};
+const LS_KEY = 'mc_ssiap_draft_v2';
+const LS_QUEUE = 'mc_ssiap_queue_v2';
+
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let state = {
+  posteValidee: false,
+  vacation_id: null,          // retourné par Make après prise de poste
+  agent: '', site: '', date: '', hstart: '', hend: '', consignes: '', recap: '',
+  fichiers: [],
+  rondes: [],                 // [{ts, label, comment}]
+  events: [],                 // [{type, desc, action, ts}]
+  rondeInProgress: false,
+};
+let offlineQueue = [];        // [{payload, retries}]
+let retryTimer = null;
+
+/* ══════════════════════════════════════
+   CLOCK
+══════════════════════════════════════ */
+function tickClock() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+tickClock(); setInterval(tickClock, 10000);
+
+/* ══════════════════════════════════════
+   SECTIONS
+══════════════════════════════════════ */
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+  // Quand on ouvre la clôture, enregistrer l'heure réelle
+  if (id === 'sec-cloture' && document.getElementById('sec-cloture').classList.contains('open')) {
+    stampClotureTime();
+  }
+}
+function openCameraCapture() {
+  // Recréer l'input pour forcer la réinitialisation de l'attribut capture sur iOS
+  const old = document.getElementById('f-camera');
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.setAttribute('capture', 'environment');
+  inp.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none';
+  inp.onchange = function() { addFiles(this.files); };
+  old.parentNode.replaceChild(inp, old);
+  inp.id = 'f-camera';
+  inp.click();
+}
+function stampClotureTime() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('f-hend').value = hh + ':' + mm;
+  autosave();
+}
+function openSection(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+/* ══════════════════════════════════════
+   SITE CHANGE
+══════════════════════════════════════ */
+function onSiteChange() {
+  const site = document.getElementById('f-site').value;
+  document.getElementById('site-badge').textContent = site || '—';
+  const cfg = SITES[site];
+  if (cfg) {
+    if (!document.getElementById('f-date').value) {
+      document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+    }
+    // Auto-remplir les consignes du site
+    const consignesTxt = cfg.consignes || '';
+    document.getElementById('f-consignes').value = consignesTxt;
+    const cDiv = document.getElementById('consignes-display');
+    if (consignesTxt) {
+      const lines = consignesTxt.split('\n').filter(l => l.trim());
+      cDiv.innerHTML = lines.map(l => `<div style="display:flex;gap:8px;align-items:flex-start;background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 10px;font-size:13px;line-height:1.4"><span style="color:var(--warn);flex-shrink:0;margin-top:1px">⚠</span><span style="color:var(--fg)">${l}</span></div>`).join('');
+      cDiv.style.display = 'flex';
+      cDiv.style.flexDirection = 'column';
+      cDiv.style.gap = '5px';
+    } else {
+      cDiv.innerHTML = '';
+      cDiv.style.display = 'none';
+    }
+  }
+  updateProgress();
+}
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 3000);
+}
+
+/* ══════════════════════════════════════
+   OFFLINE
+══════════════════════════════════════ */
+function updateOfflineUI() {
+  const banner = document.getElementById('offline-banner');
+  if (!navigator.onLine) {
+    banner.classList.add('show');
+  } else {
+    banner.classList.remove('show');
+    flushQueue();
+  }
+}
+window.addEventListener('online',  updateOfflineUI);
+window.addEventListener('offline', updateOfflineUI);
+
+/* ══════════════════════════════════════
+   OFFLINE QUEUE (rondes)
+══════════════════════════════════════ */
+function loadQueue() {
+  try { offlineQueue = JSON.parse(localStorage.getItem(LS_QUEUE) || '[]'); } catch(e) { offlineQueue = []; }
+}
+function saveQueue() {
+  try { localStorage.setItem(LS_QUEUE, JSON.stringify(offlineQueue)); } catch(e) {}
+  updateQueueBadge();
+}
+function enqueue(payload) {
+  offlineQueue.push({ payload, retries: 0 });
+  saveQueue();
+}
+function updateQueueBadge() {
+  const el = document.getElementById('queue-badge');
+  const lbl = document.getElementById('queue-label');
+  if (offlineQueue.length > 0) {
+    el.classList.add('show');
+    lbl.textContent = `${offlineQueue.length} ronde(s) en attente d'envoi`;
+  } else {
+    el.classList.remove('show');
+  }
+}
+async function flushQueue() {
+  if (!navigator.onLine || offlineQueue.length === 0) return;
+  const toSend = [...offlineQueue];
+  offlineQueue = [];
+  saveQueue();
+  for (const item of toSend) {
+    try {
+      const r = await fetch(WEBHOOK.ronde, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.payload)
+      });
+      if (!r.ok) throw new Error(r.status);
+    } catch(e) {
+      if (item.retries < 5) {
+        item.retries++;
+        offlineQueue.push(item);
+      }
+    }
+  }
+  saveQueue();
+  if (offlineQueue.length === 0) showToast('Toutes les rondes en attente ont été envoyées ✓', 'ok');
+}
+
+/* ══════════════════════════════════════
+   AUTOSAVE (localStorage)
+══════════════════════════════════════ */
+function autosave() {
+  try {
+    const draft = {
+      ...state,
+      agent:     document.getElementById('f-agent')?.value || '',
+      site:      document.getElementById('f-site')?.value || '',
+      date:      document.getElementById('f-date')?.value || '',
+      hstart:    document.getElementById('f-hstart')?.value || '',
+      hend:      document.getElementById('f-hend')?.value || '',
+      consignes: document.getElementById('f-consignes')?.value || '',
+      recap:     document.getElementById('f-recap')?.value || '',
+
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(draft));
+  } catch(e) {}
+}
+function loadDraft() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+function applyDraft(draft) {
+  state = { ...state, ...draft };
+  document.getElementById('f-agent').value = draft.agent || '';
+  document.getElementById('f-site').value = draft.site || '';
+  document.getElementById('f-date').value = draft.date || '';
+  document.getElementById('f-hstart').value = draft.hstart || '';
+  document.getElementById('f-hend').value = draft.hend || '';
+  document.getElementById('f-consignes').value = draft.consignes || '';
+  document.getElementById('f-recap').value = draft.recap || '';
+
+  onSiteChange();
+  renderRondeLog();
+  renderEvents();
+  renderPhotos();
+  updateProgress();
+  if (draft.posteValidee) {
+    afterPosteValidee(false); // no toast on restore
+  }
+}
+function clearStorage() {
+  try {
+    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_QUEUE);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════
+   RESTORE BANNER
+══════════════════════════════════════ */
+function checkRestore() {
+  const draft = loadDraft();
+  if (draft && (draft.agent || draft.site || draft.rondes?.length > 0)) {
+    document.getElementById('restore-banner').classList.add('show');
+  }
+}
+function restoreDraft() {
+  document.getElementById('restore-banner').classList.remove('show');
+  const draft = loadDraft();
+  if (draft) { applyDraft(draft); showToast('Vacation restaurée ✓', 'ok'); }
+}
+function discardDraft() {
+  document.getElementById('restore-banner').classList.remove('show');
+  clearStorage();
+}
+
+/* ══════════════════════════════════════
+   PRISE DE POSTE
+══════════════════════════════════════ */
+async function validerPoste() {
+  const agent = document.getElementById('f-agent').value.trim();
+  const site  = document.getElementById('f-site').value;
+  const date  = document.getElementById('f-date').value;
+  // Heure réelle de validation
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const hstart = hh + ':' + mm;
+  document.getElementById('f-hstart').value = hstart;
+  if (!agent || !site || !date) {
+    showToast('Remplissez tous les champs obligatoires', 'err'); return;
+  }
+  const btn = document.getElementById('btn-valider-poste');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi…';
+
+  const payload = {
+    type: 'prise_de_poste',
+    agent, site, date,
+    heure_debut: hstart,
+    consignes: document.getElementById('f-consignes').value.trim()
+  };
+
+  try {
+    let vacation_id = null;
+    if (navigator.onLine) {
+      const r = await fetch(WEBHOOK.poste, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        try {
+          const text = await r.text();
+          console.log('[MC] webhook response raw:', text);
+          const data = JSON.parse(text);
+          console.log('[MC] webhook response parsed:', data);
+          vacation_id = data.vacation_id || data.id || null;
+          console.log('[MC] vacation_id extrait:', vacation_id);
+        } catch(e) { console.error('[MC] parse error:', e); }
+      } else {
+        const errTxt = await r.text().catch(() => '');
+        throw new Error('HTTP ' + r.status + (errTxt ? ': ' + errTxt.slice(0,100) : ''));
+      }
+    } else {
+      // offline: génère un id temporaire
+      vacation_id = 'OFFLINE_' + Date.now();
+      showToast('Hors ligne — ID temporaire généré', 'warn');
+    }
+    state.vacation_id = vacation_id;
+    state.posteValidee = true;
+    autosave();
+    afterPosteValidee(true);
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '✓ Valider la prise de poste';
+    showToast('Erreur : ' + (e.message || 'réseau'), 'err');
+  }
+}
+
+function afterPosteValidee(withToast) {
+  // Lock poste fields
+  ['f-agent','f-site','f-date','f-hstart'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.disabled = true;
+  });
+  const btn = document.getElementById('btn-valider-poste');
+  btn.innerHTML = '✓ Prise de poste enregistrée';
+  btn.disabled = true;
+  document.getElementById('chip-poste').textContent = '✓ OK';
+  document.getElementById('chip-poste').style.color = 'var(--go)';
+  // Enable ronde
+  document.getElementById('btn-ronde').disabled = false;
+  document.getElementById('btn-cloture').disabled = false;
+  // Open rondes section
+  openSection('sec-rondes');
+  if (withToast) showToast('Prise de poste enregistrée ✓', 'ok');
+  updateClotureStats();
+}
+
+/* ══════════════════════════════════════
+   RONDES
+══════════════════════════════════════ */
+function startRonde() {
+  if (state.rondeInProgress) return;
+  // Valider la ronde immédiatement
+  validateRonde();
+}
+function cancelRonde() {
+  state.rondeInProgress = false;
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  document.getElementById('btn-ronde').disabled = false;
+}
+let _rondeCommentIdx = -1;
+function showRondeCommentPrompt(idx) {
+  _rondeCommentIdx = idx;
+  document.getElementById('ronde-comment').value = state.rondes[idx].comment === 'RAS' ? '' : (state.rondes[idx].comment || '');
+  document.getElementById('ronde-comment-zone').classList.add('open');
+}
+function cancelRondeComment() {
+  document.getElementById('ronde-comment').value = '';
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  _rondeCommentIdx = -1;
+}
+function saveRondeComment() {
+  if (_rondeCommentIdx >= 0) {
+    const val = document.getElementById('ronde-comment').value.trim();
+    state.rondes[_rondeCommentIdx].comment = val || 'RAS';
+    autosave();
+    renderRondeLog();
+  }
+  document.getElementById('ronde-comment').value = '';
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  _rondeCommentIdx = -1;
+}
+async function validateRonde() {
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const label = `${h}h${m}`;
+  const comment = document.getElementById('ronde-comment').value.trim() || 'RAS';
+
+  const entry = { ts: now.toISOString(), label, comment };
+  state.rondes.push(entry);
+  state.rondeInProgress = false;
+  document.getElementById('ronde-comment-zone').classList.remove('open');
+  document.getElementById('btn-ronde').disabled = false;
+  // Proposer commentaire optionnel sur la ronde qui vient d'être ajoutée
+  const lastIdx = state.rondes.length - 1;
+  showRondeCommentPrompt(lastIdx);
+  autosave();
+  renderRondeLog();
+  updateProgress();
+  updateClotureStats();
+
+  // Send to Make
+  const payload = {
+    type: 'ronde',
+    vacation_id: state.vacation_id,
+    heure: label,
+    commentaire: comment,
+    ts: now.toISOString(),
+    rondes: state.rondes.map(r => `=> ${r.label} : ${r.comment}`).join('\n'),
+    nombre_rondes: state.rondes.length
+  };
+  if (navigator.onLine) {
+    try {
+      const r = await fetch(WEBHOOK.ronde, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (r.ok) {
+        showToast(`Ronde ${label} enregistrée ✓`, 'ok');
+      } else {
+        throw new Error(r.status);
+      }
+    } catch(e) {
+      enqueue(payload);
+      showToast(`Ronde enregistrée localement (hors ligne)`, 'warn');
+    }
+  } else {
+    enqueue(payload);
+    showToast(`Ronde enregistrée — file d'attente`, 'warn');
+  }
+}
+
+function renderRondeLog() {
+  const log = document.getElementById('ronde-log');
+  if (state.rondes.length === 0) { log.innerHTML = ''; return; }
+  log.innerHTML = [...state.rondes].reverse().map(r =>
+    `<div class="ronde-entry">
+      <span class="ronde-entry-time">${r.label}</span>
+      <div style="min-width:0">
+        <div>${r.comment === 'RAS' ? '' : r.comment}</div>
+        <div class="ronde-entry-comment">${r.comment === 'RAS' ? 'RAS' : ''}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function updateProgress() {
+  const site = document.getElementById('f-site').value;
+  const goal = SITES[site]?.rondes || 0;
+  const done = state.rondes.length;
+  const pct = goal ? Math.min(100, Math.round(done / goal * 100)) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = pct + ' %';
+  document.getElementById('chip-rondes').textContent = `${done} / ${goal || '—'}`;
+}
+
+/* ══════════════════════════════════════
+   ÉVÉNEMENTS
+══════════════════════════════════════ */
+function addEvent() {
+  const type   = document.getElementById('f-event-type').value;
+  const desc   = document.getElementById('f-event-desc').value.trim();
+  const action = document.getElementById('f-event-action').value.trim();
+  if (!type || !desc || !action) { showToast('Type, description et action prise sont obligatoires', 'err'); return; }
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const resolu = document.getElementById('f-event-resolu').value === '1';
+  state.events.push({ type, desc, action, resolu, ts: now.toISOString(), label: `${h}h${m}` });
+  document.getElementById('f-event-type').value = '';
+  document.getElementById('f-event-desc').value = '';
+  document.getElementById('f-event-action').value = '';
+  // Reset toggle résolu
+  document.getElementById('f-event-resolu').value = '0';
+  document.getElementById('f-event-resolu-check').checked = false;
+  const lbl = document.getElementById('resolu-state-label');
+  lbl.textContent = '⏳ En cours — glisser pour marquer résolu';
+  lbl.style.color = 'var(--warn)';
+  autosave();
+  renderEvents();
+  updateClotureStats();
+  showToast('Événement ajouté ✓', 'ok');
+  // Sync événements vers Notion
+  if (state.vacation_id) {
+    const eventsTxt = state.events.map(e => `=> ${e.label} : ${e.type} — ${e.desc}${e.action ? ' → '+e.action : ''}`).join('\n');
+    fetch(WEBHOOK.ronde, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'ronde',
+        vacation_id: state.vacation_id,
+        rondes: state.rondes.map(r => `=> ${r.label} : ${r.comment}`).join('\n'),
+        nombre_rondes: state.rondes.length,
+        evenements: eventsTxt,
+        nb_incidents: state.events.length,
+        types_evenements: [...new Set(state.events.map(e => e.type))]
+      })
+    }).catch(() => {});
+  }
+}
+function removeEvent(i) {
+  state.events.splice(i, 1);
+  autosave();
+  renderEvents();
+  updateClotureStats();
+}
+function showConfirmDialog(message) {
+  return new Promise(resolve => {
+    const modal = document.getElementById('confirm-modal');
+    document.getElementById('confirm-msg').textContent = message;
+    modal.style.display = 'flex';
+    const ok = document.getElementById('confirm-ok');
+    const cancel = document.getElementById('confirm-cancel');
+    const cleanup = (val) => {
+      modal.style.display = 'none';
+      ok.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      resolve(val);
+    };
+    const onOk = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    ok.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+  });
+}
+
+
+function onResuluToggle() {
+  const chk = document.getElementById('f-event-resolu-check');
+  const inp = document.getElementById('f-event-resolu');
+  const lbl = document.getElementById('resolu-state-label');
+  const isResolu = chk.checked;
+  inp.value = isResolu ? '1' : '0';
+  lbl.textContent = isResolu ? '✅ Résolu' : '⏳ En cours — glisser pour marquer résolu';
+  lbl.style.color = isResolu ? 'var(--go)' : 'var(--warn)';
+}
+
+/* ── Consignes superviseur ── */
+function initConsignes() {
+  const isAdmin = new URLSearchParams(location.search).has('admin');
+  const preset = localStorage.getItem('mc_ssiap_consignes_preset') || '';
+  const ta = document.getElementById('f-consignes');
+  const adminBtn = document.getElementById('btn-admin-consignes');
+  const presetInfo = document.getElementById('consigne-preset-info');
+  if (isAdmin) {
+    ta.readOnly = false;
+    ta.style.background = '';
+    ta.style.color = '';
+    ta.style.cursor = '';
+    ta.style.resize = '';
+    ta.value = preset;
+    adminBtn.style.display = 'inline-flex';
+    document.getElementById('consigne-admin-panel').style.display = 'block';
+    showToast('Mode superviseur actif', 'ok');
+  } else if (preset) {
+    ta.value = preset;
+    presetInfo.style.display = 'flex';
+  }
+}
+
+function toggleResolu(i) {
+  state.events[i].resolu = !state.events[i].resolu;
+  autosave();
+  renderEvents();
+  updateClotureStats();
+}
+
+/* ══════════════════════════════════════
+   PHOTOS / FICHIERS
+══════════════════════════════════════ */
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('photo-drop-zone').style.borderColor = 'var(--border)';
+  addFiles(e.dataTransfer.files);
+}
+
+function addFiles(files) {
+  const MAX = 5 * 1024 * 1024;
+  Array.from(files).forEach(file => {
+    if (file.size > MAX) { showToast(`${file.name} dépasse 5 Mo`, 'err'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      const data = ev.target.result; // base64 data URL
+      if (file.type.startsWith('image/')) {
+        // Compress image via canvas
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1200;
+          let w = img.width, h = img.height;
+          if (w > MAX_DIM || h > MAX_DIM) {
+            if (w > h) { h = Math.round(h * MAX_DIM / w); w = MAX_DIM; }
+            else { w = Math.round(w * MAX_DIM / h); h = MAX_DIM; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL('image/jpeg', 0.75);
+          state.fichiers.push({ name: file.name, type: 'image/jpeg', data: compressed });
+          renderPhotos();
+        };
+        img.src = data;
+      } else {
+        state.fichiers.push({ name: file.name, type: file.type, data: data });
+        renderPhotos();
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photo-grid');
+  const chip = document.getElementById('chip-photos');
+  chip.textContent = state.fichiers.length;
+  const locked = grid.dataset.locked === '1';
+  grid.innerHTML = state.fichiers.map((f, i) => {
+    const isImg = f.type.startsWith('image/');
+    return `<div style="position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--border);aspect-ratio:1;background:var(--card2);display:flex;align-items:center;justify-content:center">
+      ${isImg
+        ? `<img src="${f.data}" style="width:100%;height:100%;object-fit:cover">`
+        : `<div style="text-align:center;padding:6px"><div style="font-size:22px">📄</div><div style="font-size:9px;color:var(--fg2);word-break:break-all;margin-top:4px">${f.name}</div></div>`
+      }
+      ${locked ? '' : `<button onclick="removeFichier(${i})" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center">✕</button>`}
+    </div>`;
+  }).join('');
+}
+
+function removeFichier(i) {
+  state.fichiers.splice(i, 1);
+  renderPhotos();
+}
+
+function renderEvents() {
+  const list = document.getElementById('events-list');
+  const chip = document.getElementById('chip-events');
+  chip.textContent = state.events.length;
+  document.getElementById('no-events-msg').style.display = state.events.length ? 'none' : '';
+  const hintEl = document.getElementById('resolu-hint');
+  if (hintEl) hintEl.style.display = state.events.length ? '' : 'none';
+  const cards = state.events.map((e, i) =>
+    `<div class="event-card">
+      <div class="event-card-head">
+        <span class="event-badge">${e.type}</span>
+        <span style="font-size:11px;color:var(--fg2)">${e.label}</span>
+        <button onclick="toggleResolu(${i})" title="Appuyer pour changer le statut" style="cursor:pointer;font-size:12px;font-weight:700;padding:5px 10px;border-radius:8px;border:1.5px solid ${e.resolu ? 'var(--go)' : 'var(--warn)'};background:${e.resolu ? 'var(--go-bg)' : 'var(--warn-bg)'};color:${e.resolu ? 'var(--go)' : 'var(--warn)'};text-decoration:underline dotted;">${e.resolu ? '✅ Résolu' : '⏳ En cours'}</button>
+        <button class="event-del" onclick="removeEvent(${i})" title="Supprimer">✕</button>
+      </div>
+      <div style="font-size:13px;color:var(--fg)">${e.desc}</div>
+      ${e.action ? `<div style="font-size:12px;color:var(--fg2)">→ ${e.action}</div>` : ''}
+    </div>`
+  ).join('');
+  // Replace cards (keep no-events-msg element)
+  const existing = list.querySelectorAll('.event-card');
+  existing.forEach(el => el.remove());
+  list.insertAdjacentHTML('afterbegin', cards);
+}
+
+/* ══════════════════════════════════════
+   CLÔTURE
+══════════════════════════════════════ */
+function updateClotureStats() {
+  const site = document.getElementById('f-site').value;
+  const goal = SITES[site]?.rondes || '—';
+  const done = state.rondes.length;
+  const nb = state.events.length;
+  document.getElementById('cloture-stats').innerHTML = `
+    <div class="stat-row"><span>Agent</span><span class="stat-val">${document.getElementById('f-agent')?.value || '—'}</span></div>
+    <div class="stat-row"><span>Site</span><span class="stat-val">${site || '—'}</span></div>
+    <div class="stat-row"><span>Rondes effectuées</span><span class="stat-val ${done >= goal ? 'green' : 'warn'}">${done} / ${goal}</span></div>
+    <div class="stat-row"><span>Événements</span><span class="stat-val ${nb > 0 ? 'warn' : ''}">${nb}</span></div>
+  `;
+  // Update resolu summary
+  const resolEl = document.getElementById('resolu-count');
+  if (resolEl) {
+    const total = state.events.length;
+    if (total === 0) {
+      resolEl.textContent = 'Aucun incident';
+      resolEl.style.color = 'var(--fg2)';
+    } else {
+      const res = state.events.filter(e => e.resolu).length;
+      resolEl.textContent = res === total ? `✅ Tous résolus (${total}/${total})` : `⏳ ${res}/${total} résolu(s)`;
+      resolEl.style.color = res === total ? 'var(--go)' : 'var(--warn)';
+    }
+  }
+}
+
+async function cloturerVacation() {
+  // Flush queue first
+  await flushQueue();
+  if (offlineQueue.length > 0) {
+    showToast('Des rondes sont encore en attente. Vérifiez la connexion.', 'warn');
+    return;
+  }
+  const hend  = document.getElementById('f-hend').value;
+  const recap = document.getElementById('f-recap').value.trim();
+  if (!hend) { showToast('Indiquez l\'heure de fin', 'err'); return; }
+  if (!recap) {
+    showToast('Le récapitulatif de fin de vacation est obligatoire', 'err');
+    document.getElementById('f-recap').focus();
+    document.getElementById('f-recap').style.borderColor = 'var(--danger)';
+    setTimeout(() => document.getElementById('f-recap').style.borderColor = '', 2500);
+    return;
+  }
+
+  // Confirmation si des événements ne sont pas résolus
+  const nonResolus = state.events.filter(e => !e.resolu);
+  if (nonResolus.length > 0) {
+    const noms = nonResolus.map(e => `• ${e.label} — ${e.type}`).join('\n');
+    const msg = `${nonResolus.length} événement(s) en suspens :\n\n${noms}`;
+    const confirmed = await showConfirmDialog(msg);
+    if (!confirmed) return;
+  }
+
+  const btn = document.getElementById('btn-cloture');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Envoi en cours…';
+
+  const rondeTxt = state.rondes.map(r => `${r.label} : ${r.comment}`).join(' | ');
+  const eventsTxt = state.events.map(e => `[${e.label}] ${e.type} — ${e.desc}${e.action ? ' → '+e.action : ''}`).join('\n');
+
+  const payload = {
+    type: 'cloture',
+    vacation_id: state.vacation_id,
+    agent: document.getElementById('f-agent').value,
+    site: document.getElementById('f-site').value,
+    date: document.getElementById('f-date').value,
+    heure_debut: document.getElementById('f-hstart').value,
+    heure_fin: hend,
+    heure_fin_iso: (document.getElementById('f-date').value && hend) ? document.getElementById('f-date').value + 'T' + hend + ':00' : '',
+    rondes: rondeTxt,
+    nombre_rondes: state.rondes.length,
+    evenements: eventsTxt,
+    action_prise: state.events.filter(e => e.action).map(e => `[${e.label}] ${e.action}`).join('\n'),
+    description_evenement: state.events.filter(e => e.desc).map(e => `[${e.label}] ${e.type} — ${e.desc}`).join('\n'),
+    nb_incidents: state.events.length,
+    recap,
+    resolu: state.events.every(e => e.resolu),
+    statut: state.events.length > 0 ? (state.events.every(e => e.resolu) ? 'Clôturée' : 'Incident majeur') : 'Clôturée',
+    types_evenements: [...new Set(state.events.map(e => e.type))],
+    types_evenements_txt: [...new Set(state.events.map(e => e.type))].join(', '),
+    fichiers: state.fichiers.map(f => ({ name: f.name, type: f.type, data: f.data }))
+  };
+
+  try {
+    if (!navigator.onLine) throw new Error('offline');
+    const r = await fetch(WEBHOOK.cloture, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      throw new Error('HTTP ' + r.status + (errText ? ': ' + errText.slice(0,120) : ''));
+    }
+    clearStorage();
+    showDone();
+  } catch(e) {
+    btn.disabled = false;
+    btn.innerHTML = '🔒 Clôturer la vacation';
+    if (!navigator.onLine || e.message === 'offline') {
+      showToast('Hors ligne — impossible de clôturer', 'err');
+    } else {
+      showToast('Erreur : ' + (e.message || 'réseau'), 'err');
+    }
+  }
+}
+
+function showDone() {
+  document.getElementById('main-content').style.display = 'none';
+  ['sec-poste','sec-rondes','sec-events','sec-cloture'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  document.getElementById('done-screen').classList.add('show');
+  // Bloquer l'ajout et la suppression de photos après clôture
+  const photoZone = document.getElementById('photo-add-zone');
+  if (photoZone) photoZone.style.display = 'none';
+  // Masquer les boutons ✕ de suppression des photos
+  document.querySelectorAll('#photo-grid button').forEach(btn => btn.style.display = 'none');
+  // Marquer la grille comme verrouillée pour renderFichiers
+  const grid = document.getElementById('photo-grid');
+  if (grid) grid.dataset.locked = '1';
+}
+
+function resetApp() {
+  location.reload();
+}
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  // Today's date as default
+  document.getElementById('f-date').value = new Date().toISOString().slice(0,10);
+  document.getElementById('f-hstart').value = '';
+  loadQueue();
+  updateQueueBadge();
+  updateOfflineUI();
+  checkRestore();
+  updateClotureStats();
+});
+</script>
+
+</body>
+</html>
