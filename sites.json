@@ -1,0 +1,18 @@
+[
+  {
+    "nom": "La Villa",
+    "actif": true,
+    "rondes": 16,
+    "heureDebut": "19:00",
+    "heureFin": "03:00",
+    "consignes": "Ronde toutes les 30 min — Villa + parc.\nÉtage interdit aux invités.\nPas de danse sur le parquet RDC.\nPrévenir le locataire 45 min avant la fin de soirée.\nNuisances sonores : intervenir dès 22h00.\nFin de service : mettre l'alarme + clés en BAL."
+  },
+  {
+    "nom": "Salle des Tribunes",
+    "actif": true,
+    "rondes": 14,
+    "heureDebut": "19:00",
+    "heureFin": "02:00",
+    "consignes": "Ronde toutes les 30 min — stade + salle des tribunes.\nStade et pelouse interdits aux invités.\nPas de danse sur le parquet RDC.\nRefermer la porte électrique après arrivée des invités.\nPrévenir le locataire 45 min avant la fin de soirée.\nNuisances sonores : intervenir dès 22h00.\nFin de service : volets verrouillés + salle cheminée fermée à clé + clés en BAL."
+  }
+]
